@@ -1,2 +1,2 @@
 # Notif
-Building a notification system
+Building a notification system using GO
