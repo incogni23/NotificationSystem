@@ -1,4 +1,4 @@
-module github.com/project001/kafka
+module github.com/project001/producer
 
 go 1.22.0
 

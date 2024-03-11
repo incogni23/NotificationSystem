@@ -1,0 +1,11 @@
+[]byte
+Shubham Ojha
+12:43 AM
+-> main message (of type Events => json.Marshal() => []byte)
+
+json.Unmarshal() => []byte => specfic form (you have decide)
+
+-> expectations: 
+-> read the data from the topic
+-> to read data in specfic form -> which you need decide. ()
+https://github.com/segmentio/kafka-go?tab=readme-ov-file#reader-
