@@ -28,6 +28,7 @@ type Event struct {
 	Source             string   `json:"source"`
 	DestinationAddress string   `json:"destinationAddress"`
 	Topics             []string `json:"topics"`
+	NotificationType   string   `json:"notificationtype"`
 }
 
 func conversion(events Event) []byte {

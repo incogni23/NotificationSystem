@@ -1,0 +1,13 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Launch NotificationService",
+        "type": "go",
+        "request": "launch",
+        "mode": "debug",
+        "program": "main.go"
+        
+      }
+    ]
+  }
