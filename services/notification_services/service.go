@@ -3,6 +3,7 @@ package service
 import (
 	"bytes"
 	"consumer"
+	"errors"
 	"fmt"
 	"net/http"
 )
@@ -28,7 +29,8 @@ func Deliver(event consumer.Event, notificationType string) error {
 		fmt.Print("msg sent", resp.Status)
 
 	default:
-		fmt.Print("notification type required", notificationType)
+		return errors.New("notification type required")
+		//fmt.Print("notification type required", notificationType)
 
 	}
 	return nil

@@ -9,3 +9,37 @@ json.Unmarshal() => []byte => specfic form (you have decide)
 -> read the data from the topic
 -> to read data in specfic form -> which you need decide. ()
 https://github.com/segmentio/kafka-go?tab=readme-ov-file#reader-
+
+Based on the design, this is what we are going to do (in sequence)
+
+1) Create a db auto migration using gorm which will put events to a table in db
+
+2) Insert some dummy data into the database with status NOT COMPLETED 
+
+3) Write a clock which will query the database and retries it to the desired endpoints
+Tip: just query the db and use the already existing Diliver function to achieve this
+
+Caution: retires should be taking place in exponential backoff order for a given event, as in first retry should be in 2 mins, second in 5, third in 30 etc
+
+Tip: check time.Sleep function in golang
+
+
+4) Write an update query in the database whenever the status is changed (to Success on success retry)
+
+5) Add idempotency key to the Event structure
+
+Generate this key in the producer wrapper
+
+To generate a random unique key you can use UUIDs
+
+(Universal unique identifier)
+
+General development tip
+
+Start slow, write small small individual functions, test it out, then move forward
+
+Dont write everything in one shot
+
+For eg. First i will write a function that will generate a uuid uniquely using uuid library. Will check if it is working
+
+If yes, will move forward to write the auto migration etc

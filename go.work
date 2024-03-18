@@ -4,4 +4,7 @@ use (
 	.
 	./producer
 	./consumer
+	./services/notification_services
+	./database
+	./Timer
 )

@@ -1,38 +1,40 @@
 package consumer
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
-	"net/http"
 
 	"fmt"
 
+	"github.com/lib/pq"
 	"github.com/segmentio/kafka-go"
 )
 
+type Event struct {
+	Message            []byte         `json:"message"`
+	Source             string         `json:"source"`
+	DestinationAddress string         `json:"destinationAddress"`
+	Topics             pq.StringArray `gorm:"type:text[]" json:"topics"`
+	NotificationType   string         `json:"notificationtype"`
+	Status             string         `json:"status"`
+	Attempts           int            `json:"attempts"`
+	NextRetry          int64          `json:"nextRetry"`
+}
 type Consumer struct {
 	reader *kafka.Reader
 }
 
 func NewReader(brokers []string, Topic string) *Consumer {
 	r := kafka.NewReader(kafka.ReaderConfig{
-		Brokers:   brokers,
-		Topic:     Topic,
-		Partition: 0,
+		GroupID: "consumergc",
+		Brokers: brokers,
+		Topic:   Topic,
 	})
-	r.SetOffset(6)
+	//r.SetOffset()
 
 	return &Consumer{
 		reader: r,
 	}
-}
-
-type Event struct {
-	Message            []byte   `json:"message"`
-	Source             string   `json:"source"`
-	DestinationAddress string   `json:"destinationAddress"`
-	Topics             []string `json:"topics"`
 }
 
 func conversion(msgs []byte) (Event, error) {
@@ -44,48 +46,19 @@ func conversion(msgs []byte) (Event, error) {
 	return event, nil
 }
 
-func (c *Consumer) Consume() {
+func (c *Consumer) Consume() Event {
 
-	for {
-		m, err := c.reader.ReadMessage(context.Background())
-		if err != nil {
-			fmt.Print("error is", err)
-			continue
-		}
-		event, err := conversion(m.Value)
-		if err != nil {
-			fmt.Print("error after getting the msg is ", err)
-			continue
-		}
-		fmt.Print("so far msg is", event.Message)
-		deliver(event)
-		if err != nil {
-			fmt.Print("error in sending msg to webhook", err)
-			continue
-		}
-
-	}
-}
-
-func deliver(event Event) (err error) {
-	client := &http.Client{}
-
-	req, err := http.NewRequest("POST", event.DestinationAddress, bytes.NewBuffer(event.Message))
+	m, err := c.reader.ReadMessage(context.Background())
 	if err != nil {
-		fmt.Print("error creating HTTP req", err)
-		return err
+		fmt.Print("error is", err)
 
 	}
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := client.Do(req)
+	event, err := conversion(m.Value)
 	if err != nil {
-		fmt.Print("error in send msg to webhook", err)
-		return err
+		fmt.Print("error after getting the msg is ", err)
 
 	}
-	defer resp.Body.Close()
-	fmt.Print("message sent", resp.Status)
-	return
+	fmt.Print("so far msg is", event.Message)
+	return event
 
 }
