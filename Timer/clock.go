@@ -2,9 +2,9 @@ package clock
 
 import (
 	"consumer"
-	"fmt"
 	"time"
 
+	"github.com/labstack/gommon/log"
 	database "github.com/pikapika/database"
 	"github.com/pikapika/models"
 	service "github.com/pikapika/notification_services"
@@ -27,7 +27,7 @@ func RetryClock() {
 	for {
 		events, err := database.GetEventsForRetry()
 		if err != nil {
-			fmt.Print("Error getting incomplete events", err)
+			log.Error("Error getting incomplete events", err)
 			continue
 		}
 
@@ -37,13 +37,13 @@ func RetryClock() {
 			err := service.Deliver(eventToConsumerEvent(consumerEvent), event.NotificationType)
 
 			if err != nil {
-				fmt.Print("Error delivering events", err)
+				log.Error("Error delivering events", err)
 				event.Status = "Not Completed Yet"
 				event.Attempts++
 				event.NextRetry = time.Now().Unix() + calculateRetryTime(event.Attempts)
 				err := database.UpdateEvent(event)
 				if err != nil {
-					fmt.Print("Error in updating event", err)
+					log.Error("Error in updating event", err)
 				}
 			} else {
 				event.Status = "Completed"
@@ -51,11 +51,11 @@ func RetryClock() {
 				event.NextRetry = 0
 				err := database.UpdateEvent(event)
 				if err != nil {
-					fmt.Print("Error in updating events")
+					log.Error("Error in updating events")
 				}
 			}
 		}
-		fmt.Print("retry is working")
+		log.Info("retry is working")
 		time.Sleep(time.Minute)
 
 	}

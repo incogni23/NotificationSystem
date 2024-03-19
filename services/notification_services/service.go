@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"consumer"
 	"errors"
-	"fmt"
 	"net/http"
+
+	"github.com/labstack/gommon/log"
 )
 
 func Deliver(event consumer.Event, notificationType string) error {
@@ -15,18 +16,18 @@ func Deliver(event consumer.Event, notificationType string) error {
 
 		req, err := http.NewRequest("POST", event.DestinationAddress, bytes.NewBuffer(event.Message))
 		if err != nil {
-			fmt.Print("error creating http req", err)
+			log.Error("error creating http req", err)
 			return err
 		}
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, err := client.Do(req)
 		if err != nil {
-			fmt.Print("error sending msg to webhook", err)
+			log.Error("error sending msg to webhook", err)
 			return err
 		}
 		defer resp.Body.Close()
-		fmt.Print("msg sent", resp.Status)
+		log.Info("msg sent", resp.Status)
 
 	default:
 		return errors.New("notification type required")

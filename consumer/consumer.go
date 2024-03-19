@@ -4,8 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"fmt"
-
+	"github.com/labstack/gommon/log"
 	"github.com/pikapika/models"
 	"github.com/segmentio/kafka-go"
 )
@@ -40,15 +39,15 @@ func (c *Consumer) Consume() Event {
 
 	m, err := c.reader.ReadMessage(context.Background())
 	if err != nil {
-		fmt.Print("error is", err)
+		log.Error("error is", err)
 
 	}
 	event, err := conversion(m.Value)
 	if err != nil {
-		fmt.Print("error after getting the msg is ", err)
+		log.Error("error after getting the msg is ", err)
 
 	}
-	fmt.Print("so far msg is", event.Message)
+	log.Error("so far msg is", event.Message)
 	return event
 
 }
