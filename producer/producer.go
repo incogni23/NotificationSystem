@@ -5,23 +5,12 @@ import (
 	"encoding/json"
 
 	"github.com/google/uuid"
-	"github.com/lib/pq"
+	"github.com/pikapika/models"
 
 	"github.com/segmentio/kafka-go"
 )
 
-type Event struct {
-	Message            []byte         `json:"message"`
-	Source             string         `json:"source"`
-	DestinationAddress string         `json:"destinationAddress"`
-	Topics             pq.StringArray `gorm:"type:text[]" json:"topics"`
-	NotificationType   string         `json:"notificationtype"`
-	IdempotencyKey     string         `json:"idempotencykey"`
-	Status             string         `json:"status"`
-	Attempts           int            `json:"attempts"`
-	NextRetry          int64          `json:"nextretry"`
-}
-
+type Event = models.Event
 type producer struct {
 	writer *kafka.Writer
 }

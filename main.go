@@ -7,14 +7,15 @@ import (
 	"consumer"
 
 	database "github.com/pikapika/database"
+	"github.com/pikapika/models"
 	service "github.com/pikapika/notification_services"
 	clock "github.com/pikapika/timer"
 
 	"github.com/project001/producer"
 )
 
-func consumertoDB(p *consumer.Event) *database.Event {
-	d := database.Event{
+func consumertoDB(p *consumer.Event) *models.Event {
+	d := models.Event{
 		Message:            p.Message,
 		Source:             p.Source,
 		DestinationAddress: p.DestinationAddress,

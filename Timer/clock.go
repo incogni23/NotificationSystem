@@ -6,10 +6,11 @@ import (
 	"time"
 
 	database "github.com/pikapika/database"
+	"github.com/pikapika/models"
 	service "github.com/pikapika/notification_services"
 )
 
-func eventToConsumerEvent(event database.Event) consumer.Event {
+func eventToConsumerEvent(event models.Event) consumer.Event {
 	return consumer.Event{
 		Message:            event.Message,
 		Source:             event.Source,
@@ -24,25 +25,23 @@ func eventToConsumerEvent(event database.Event) consumer.Event {
 
 func RetryClock() {
 	for {
-		events, err := database.GetIncompleteEvents()
+		events, err := database.GetEventsForRetry()
 		if err != nil {
 			fmt.Print("Error getting incomplete events", err)
 			continue
 		}
 
 		for _, event := range events {
-			if event.NextRetry > time.Now().Unix() {
-				continue
-			}
+			consumerEvent := eventToConsumerEvent(*event)
 
-			err := service.Deliver(eventToConsumerEvent(event), event.NotificationType)
+			err := service.Deliver(eventToConsumerEvent(consumerEvent), event.NotificationType)
 
 			if err != nil {
 				fmt.Print("Error delivering events", err)
 				event.Status = "Not Completed Yet"
 				event.Attempts++
 				event.NextRetry = time.Now().Unix() + calculateRetryTime(event.Attempts)
-				err := database.UpdateEvent(&event)
+				err := database.UpdateEvent(event)
 				if err != nil {
 					fmt.Print("Error in updating event", err)
 				}
@@ -50,7 +49,7 @@ func RetryClock() {
 				event.Status = "Completed"
 				event.Attempts = 0
 				event.NextRetry = 0
-				err := database.UpdateEvent(&event)
+				err := database.UpdateEvent(event)
 				if err != nil {
 					fmt.Print("Error in updating events")
 				}
