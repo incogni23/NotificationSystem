@@ -64,7 +64,7 @@ func RetryClock() {
 func calculateRetryTime(attempts int) int64 {
 	switch attempts {
 	case 0:
-		return 0
+		return 60
 	case 1:
 		return 120
 	default:
