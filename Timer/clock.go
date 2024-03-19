@@ -56,7 +56,9 @@ func RetryClock() {
 				}
 			}
 		}
+		fmt.Print("retry is working")
 		time.Sleep(time.Minute)
+
 	}
 }
 

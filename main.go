@@ -6,26 +6,29 @@ import (
 
 	"consumer"
 
-	"github.com/pikapika/database"
+	database "github.com/pikapika/database"
 	service "github.com/pikapika/notification_services"
 	clock "github.com/pikapika/timer"
 
 	"github.com/project001/producer"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 )
 
-func setupDB() (*gorm.DB, error) {
-	dsn := "host=localhost user=pikapika password=Ankita@2307 dbname=db1 port=5432 sslmode=disable TimeZone=Asia/Kolkata"
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	if err != nil {
-		return nil, err
-	}
-	return db, nil
+func consumertoDB(p *consumer.Event) *database.Event {
+	d := database.Event{
+		Message:            p.Message,
+		Source:             p.Source,
+		DestinationAddress: p.DestinationAddress,
+		Topics:             p.Topics,
+		NotificationType:   p.NotificationType,
+		Status:             p.Status,
+		Attempts:           p.Attempts,
+		NextRetry:          p.NextRetry,
+		IdempotencyKey:     p.IdempotencyKey}
+	return &d
 }
 
 func main() {
-	db, err := setupDB()
+	db, err := database.SetupDB()
 	if err != nil {
 		fmt.Println("Failed to connect to database:", err)
 		return
@@ -62,20 +65,25 @@ func main() {
 	consume1 := consumer.NewReader(brokeraddress, tp)
 	failedEvent := consume1.Consume()
 	//service.Automate() for loop
+
 	err1 := service.Deliver(failedEvent, failedEvent.NotificationType)
 	if err1 != nil {
 		fmt.Print("failed to deliver the event", err1)
-
-		errr := db.Model(&producer.Event{}).Create(&failedEvent).Error
+		dbEvent := consumertoDB(&failedEvent)
+		dbEvent.Status = "Not Completed Yet"
+		errr := database.CreateEvent(dbEvent) //
 
 		if errr != nil {
-			fmt.Println("Failed to insert dummy data:", errr)
+			fmt.Printf("Failed to insert dummy data:%s", errr)
 			return
 		}
+
 		fmt.Println("Dummy data inserted successfully")
 
-		clock.RetryClock()
 	}
+	clock.RetryClock()
+
+	fmt.Println("checking go routine")
 
 	//for {
 	//time.Sleep(time.Minute)

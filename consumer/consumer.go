@@ -16,6 +16,7 @@ type Event struct {
 	DestinationAddress string         `json:"destinationAddress"`
 	Topics             pq.StringArray `gorm:"type:text[]" json:"topics"`
 	NotificationType   string         `json:"notificationtype"`
+	IdempotencyKey     string         `json:"idempotencykey"`
 	Status             string         `json:"status"`
 	Attempts           int            `json:"attempts"`
 	NextRetry          int64          `json:"nextRetry"`
