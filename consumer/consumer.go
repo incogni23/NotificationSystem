@@ -21,7 +21,6 @@ func NewReader(brokers []string, Topic string) *Consumer {
 		Brokers: brokers,
 		Topic:   Topic,
 	})
-	//r.SetOffset()
 
 	return &Consumer{
 		reader: r,

@@ -35,17 +35,3 @@ func Deliver(event consumer.Event, notificationType string) error {
 	}
 	return nil
 }
-
-func Automate() {
-	brokeraddress := []string{"localhost:9092"}
-	consumerRecieved := consumer.NewReader(brokeraddress, "quickstart-events")
-	for {
-		consumedEvent := consumerRecieved.Consume()
-		err := Deliver(consumedEvent, consumedEvent.NotificationType)
-		if err != nil {
-			fmt.Print("err in producing msg", err)
-			return
-		}
-	}
-
-}
