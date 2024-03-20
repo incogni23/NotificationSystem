@@ -38,7 +38,7 @@ func RetryClock() {
 
 			if err != nil {
 				log.Error("Error delivering events", err)
-				event.Status = "Not Completed Yet"
+				event.Status = models.StatusNotCompleted
 				event.Attempts++
 				event.NextRetry = time.Now().Unix() + calculateRetryTime(event.Attempts)
 				err := database.UpdateEvent(event)
@@ -46,7 +46,7 @@ func RetryClock() {
 					log.Error("Error in updating event", err)
 				}
 			} else {
-				event.Status = "Completed"
+				event.Status = models.StatusCompleted
 				event.Attempts = 0
 				event.NextRetry = 0
 				err := database.UpdateEvent(event)

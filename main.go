@@ -29,13 +29,11 @@ func consumertoDB(p *consumer.Event) *models.Event {
 }
 
 func main() {
-	db, err := database.SetupDB()
+	_, err := database.SetupDB()
 	if err != nil {
 		fmt.Println("Failed to connect to database:", err)
 		return
 	}
-
-	database.SetDB(db)
 
 	err = database.Initialize()
 	if err != nil {

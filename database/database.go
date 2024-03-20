@@ -1,25 +1,36 @@
 package database
 
 import (
+	"fmt"
 	"time"
 
+	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/pikapika/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 var db *gorm.DB
 
 func SetupDB() (*gorm.DB, error) {
-	dsn := "host=localhost user=pikapika password=Ankita@2307 dbname=db1 port=5432 sslmode=disable TimeZone=Asia/Kolkata"
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	var cfg models.ConfigDatabase
+
+	err := cleanenv.ReadEnv(&cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Kolkata",
+		cfg.Host, cfg.User, cfg.Password, cfg.Name, cfg.Port)
+
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
+	})
 	if err != nil {
 		return nil, err
 	}
 	return db, nil
-}
-func SetDB(database *gorm.DB) {
-	db = database
 }
 
 func CreateEvent(event *models.Event) error {
