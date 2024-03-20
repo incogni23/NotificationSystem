@@ -3,13 +3,15 @@ package service
 import (
 	"bytes"
 	"consumer"
-	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/gommon/log"
 )
 
-func Deliver(event consumer.Event, notificationType string) error {
+func Deliver(event consumer.Event, notificationType string) (error, bool) {
+
+	var isRetryable bool
 	switch notificationType {
 	case "webhook":
 		client := &http.Client{}
@@ -17,22 +19,26 @@ func Deliver(event consumer.Event, notificationType string) error {
 		req, err := http.NewRequest("POST", event.DestinationAddress, bytes.NewBuffer(event.Message))
 		if err != nil {
 			log.Error("error creating http req", err)
-			return err
+			isRetryable = false
+			return err, false
 		}
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, err := client.Do(req)
 		if err != nil {
 			log.Error("error sending msg to webhook", err)
-			return err
+			isRetryable = true
+			return err, true
 		}
 		defer resp.Body.Close()
 		log.Info("msg sent", resp.Status)
+		isRetryable = false
 
 	default:
-		return errors.New("notification type required")
-		//fmt.Print("notification type required", notificationType)
-
+		errorMsg := fmt.Sprintf("Unknown notification type: %s", notificationType)
+		log.Error(errorMsg)
+		isRetryable = false
+		return fmt.Errorf(errorMsg), false
 	}
-	return nil
+	return nil, isRetryable
 }

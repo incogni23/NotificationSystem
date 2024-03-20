@@ -34,16 +34,21 @@ func RetryClock() {
 		for _, event := range events {
 			consumerEvent := eventToConsumerEvent(*event)
 
-			err := service.Deliver(eventToConsumerEvent(consumerEvent), event.NotificationType)
+			err, isRetryable := service.Deliver(eventToConsumerEvent(consumerEvent), event.NotificationType)
 
 			if err != nil {
 				log.Error("Error delivering events", err)
-				event.Status = models.StatusNotCompleted
-				event.Attempts++
-				event.NextRetry = time.Now().Unix() + calculateRetryTime(event.Attempts)
-				err := database.UpdateEvent(event)
-				if err != nil {
-					log.Error("Error in updating event", err)
+				if isRetryable {
+					event.Status = models.StatusNotCompleted
+					event.Attempts++
+					event.NextRetry = time.Now().Unix() + calculateRetryTime(event.Attempts)
+					err := database.UpdateEvent(event)
+					if err != nil {
+						log.Error("Error in updating event", err)
+					}
+				} else {
+					log.Info("Event is not Retryable, terminate!")
+					continue
 				}
 			} else {
 				event.Status = models.StatusCompleted

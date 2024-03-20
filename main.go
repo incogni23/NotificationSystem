@@ -65,20 +65,22 @@ func main() {
 	failedEvent := consume1.Consume()
 	//service.Automate() for loop
 
-	err1 := service.Deliver(failedEvent, failedEvent.NotificationType)
+	err1, isRetryable := service.Deliver(failedEvent, failedEvent.NotificationType)
 	if err1 != nil {
 		fmt.Print("failed to deliver the event", err1)
-		dbEvent := consumertoDB(&failedEvent)
-		dbEvent.Status = "Not Completed Yet"
-		errr := database.CreateEvent(dbEvent) //
-
-		if errr != nil {
-			fmt.Printf("Failed to insert dummy data:%s", errr)
-			return
+		if isRetryable {
+			dbEvent := consumertoDB(&failedEvent)
+			err := database.CreateEvent(dbEvent)
+			if err != nil {
+				fmt.Printf("Failed to insert dummy data:%s", err)
+				return
+			}
+			fmt.Println("Dummy data inserted successfully")
+		} else {
+			fmt.Println("Event is not retryable.")
 		}
-
-		fmt.Println("Dummy data inserted successfully")
-
+	} else {
+		fmt.Println("Event delivered successfully")
 	}
 	clock.RetryClock()
 
