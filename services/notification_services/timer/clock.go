@@ -7,7 +7,7 @@ import (
 	"github.com/labstack/gommon/log"
 	database "github.com/pikapika/database"
 	"github.com/pikapika/models"
-	service "github.com/pikapika/notification_services"
+	service "github.com/pikapika/notification_services/webhook"
 )
 
 func eventToConsumerEvent(event models.Event) consumer.Event {
@@ -30,22 +30,39 @@ func RetryClock() {
 			log.Error("Error getting incomplete events", err)
 			continue
 		}
-
+		if len(events) == 0 {
+			log.Info("No events found for retry.")
+			continue
+		}
 		for _, event := range events {
 			consumerEvent := eventToConsumerEvent(*event)
+			if event.Attempts >= models.MaxRetryAttempts {
+				log.Info("Max attempts reached.")
+
+				event.Status = models.StatusIgnored
+				event.NextRetry = 0
+
+				err := database.UpdateEvent(event)
+				if err != nil {
+					log.Error("Error in updating event", err)
+				}
+
+				continue
+			}
 
 			err, isRetryable := service.Deliver(eventToConsumerEvent(consumerEvent), event.NotificationType)
-
 			if err != nil {
 				log.Error("Error delivering events", err)
 				if isRetryable {
 					event.Status = models.StatusNotCompleted
 					event.Attempts++
 					event.NextRetry = time.Now().Unix() + calculateRetryTime(event.Attempts)
+
 					err := database.UpdateEvent(event)
 					if err != nil {
 						log.Error("Error in updating event", err)
 					}
+
 				} else {
 					log.Info("Event is not Retryable, terminate!")
 					continue
@@ -54,15 +71,15 @@ func RetryClock() {
 				event.Status = models.StatusCompleted
 				event.Attempts = 0
 				event.NextRetry = 0
+
 				err := database.UpdateEvent(event)
 				if err != nil {
 					log.Error("Error in updating events")
 				}
 			}
 		}
-		log.Info("retry is working")
-		time.Sleep(time.Minute)
 
+		time.Sleep(time.Minute)
 	}
 }
 

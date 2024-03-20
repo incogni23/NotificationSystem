@@ -15,7 +15,7 @@ type Event struct {
 	IdempotencyKey     string         `json:"idempotencykey"`
 	Status             string         `json:"status"`
 	Attempts           int            `json:"attempts"`
-	NextRetry          int64          `json:"nextRetry"`
+	NextRetry          int64          `json:"nextretry"`
 }
 
 const (
@@ -26,10 +26,12 @@ const (
 
 var MaxRetryAttempts = 5
 
+const Topicname string = "quickstart-events" // for consumer
+
 type ConfigDatabase struct {
-	Port     string `env:"PORT" evn-default:"5432"`
+	Port     string `env:"PORT" env-default:"5432"`
 	Host     string `env:"HOST" env-default:"localhost"`
-	Name     string `env:"NAME" env-default:"postgres"`
-	User     string `env:"USER" env-default:"user"`
-	Password string `env:"PASSWORD"`
+	Name     string `env:"NAME" env-default:"db1"`
+	User     string `env:"USER" env-default:"pikapika"`
+	Password string `env:"PASSWORD" env-default:"Ankita@2307"`
 }

@@ -6,6 +6,6 @@ use (
 	./consumer
 	./services/notification_services
 	./database
-	./Timer
+
 	./models
 )
