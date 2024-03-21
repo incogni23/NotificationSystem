@@ -1,6 +1,8 @@
 package models
 
 import (
+	"os"
+
 	"github.com/lib/pq"
 	"gorm.io/gorm"
 )
@@ -26,7 +28,14 @@ const (
 
 var MaxRetryAttempts = 5
 
-const Topicname string = "quickstart-events" // for consumer
+var Topicname string
+
+func init() {
+	Topicname = os.Getenv("TOPICNAME")
+	if Topicname == "" {
+		Topicname = "quickstart-events"
+	}
+}
 
 type ConfigDatabase struct {
 	Port     string `env:"PORT" env-default:"5432"`
