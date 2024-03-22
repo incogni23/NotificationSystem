@@ -43,18 +43,16 @@ func Deliver(event consumer.Event, notificationType string) (error, bool) {
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, err := client.Do(req)
-		if err != nil {
-			log.Error("error sending msg to webhook", err)
-			isRetryable = true
+		if err == nil {
+			log.Info("msg sent", resp.Status)
+			if resp.StatusCode >= 400 {
+				isRetryable = true
+			}
 			return err, true
 		}
+		log.Error("error sending msg to webhook", err)
 		defer resp.Body.Close()
 		log.Info("msg sent", resp.Status)
-		if resp.StatusCode >= 200 && resp.StatusCode <= 299 {
-			isRetryable = true
-		} else {
-			isRetryable = false
-		}
 
 	default:
 		errorMsg := fmt.Sprintf("Unknown notification type: %s", notificationType)
