@@ -1,0 +1,10 @@
+go 1.22.0
+
+use (
+	./consumer
+	./database
+
+	./models
+	./producer
+	./services/notification_services
+)
