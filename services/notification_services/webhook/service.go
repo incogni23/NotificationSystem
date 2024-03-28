@@ -12,8 +12,7 @@ import (
 	"github.com/pikapika/models"
 )
 
-func consumertoDB(p *consumer.Event) *models.Event {
-
+func consumerAdapter(p *consumer.Event) *models.Event {
 	d := models.Event{
 		Message:            p.Message,
 		Source:             p.Source,
@@ -25,11 +24,12 @@ func consumertoDB(p *consumer.Event) *models.Event {
 		NextRetry:          0,
 		IdempotencyKey:     p.IdempotencyKey,
 	}
+
 	return &d
 }
-func Deliver(event consumer.Event, notificationType string) (error, bool) {
-
+func DeliverEvent(event consumer.Event, notificationType string) (error, bool) {
 	var isRetryable bool
+
 	switch notificationType {
 	case "webhook":
 		client := &http.Client{}
@@ -37,21 +37,29 @@ func Deliver(event consumer.Event, notificationType string) (error, bool) {
 		req, err := http.NewRequest("POST", event.DestinationAddress, bytes.NewBuffer(event.Message))
 		if err != nil {
 			log.Error("error creating http req", err)
+
+			// in case of non-recoverable errors we are marking retry as false
 			isRetryable = false
-			return err, false
+
+			return err, isRetryable
 		}
+
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, err := client.Do(req)
 		if err == nil {
 			log.Info("msg sent", resp.Status)
+
+			// if the acknowledgement from the client fails, we will retry again
 			if resp.StatusCode >= 400 {
 				isRetryable = true
 			}
-			return err, true
+
+			return err, isRetryable
 		}
-		log.Error("error sending msg to webhook", err)
+
 		defer resp.Body.Close()
+
 		log.Info("msg sent", resp.Status)
 
 	default:
@@ -63,45 +71,33 @@ func Deliver(event consumer.Event, notificationType string) (error, bool) {
 	return nil, isRetryable
 }
 
-//func Automate() {
-//	brokeraddress := []string{"localhost:9092"}
-//	consumerRecieved := consumer.NewReader(brokeraddress, "quickstart-events")
-//	for {
-//		consumedEvent := consumerRecieved.Consume()
-//		err, _ := Deliver(consumedEvent, consumedEvent.NotificationType)
-//		if err != nil {
-//			fmt.Print("err in producing msg", err)
-//			return
-//		}
-//	}
-//
-//}
-
-func Consuming() {
-	brokeraddress := []string{"localhost:9092"}
-	consumerRecieved := consumer.NewReader(brokeraddress, models.Topicname)
+func Consuming(brokerAddress []string) {
+	consumerRecieved := consumer.NewReader(brokerAddress, models.Topicname)
 	for {
 		consumedEvent := consumerRecieved.Consume()
-		//time.Sleep(time.Minute)
-		err, isRetryable := Deliver(consumedEvent, consumedEvent.NotificationType)
+
+		// try to diliver event based on its notification type
+		err, isRetryable := DeliverEvent(consumedEvent, consumedEvent.NotificationType)
 		if err != nil {
 			log.Error("Failed to deliver the event", err)
+
 			if isRetryable {
-				dbEvent := consumertoDB(&consumedEvent)
+				dbEvent := consumerAdapter(&consumedEvent)
+
 				dbEvent.Status = models.StatusNotCompleted
 				dbEvent.Attempts = 1
 				dbEvent.NextRetry = time.Now().Unix()
+
 				err := database.CreateEvent(dbEvent)
 				if err != nil {
 					log.Error("Failed to insert data,err")
 					return
 				}
-				log.Info("Data inserted in DB successsfully")
+
+				log.Info("data inserted in db successsfully")
 			} else {
-				log.Info("Event not retryable")
+				log.Info("event not retryable")
 			}
-		} else {
-			log.Info("Event delivered !")
 		}
 	}
 }

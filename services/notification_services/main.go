@@ -1,57 +1,37 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"sync"
 
 	database "github.com/pikapika/database"
 	clock "github.com/pikapika/notification_services/timer"
 	service "github.com/pikapika/notification_services/webhook"
-	"github.com/project001/producer"
+	log "github.com/rs/zerolog/log"
 )
 
 func main() {
-	db, err := database.SetupDB()
+	db, err := database.SetupEnvAndDB()
 	if err != nil {
-		fmt.Println("Failed to connect to database:", err)
-		return
+		log.Fatal().Msg(fmt.Errorf("Failed to connect to database: %s", err).Error())
 	}
 
-	err = database.Initialize(db)
+	err = database.Migrate(db)
 	if err != nil {
-		fmt.Println("Failed to auto migrate:", err)
-		return
-	}
-	fmt.Println("Database auto migration completed successfully")
-	produce1 := producer.Newwriter()
-	someevent := producer.Event{Message: []byte{34, 97, 98, 99, 100, 101, 34},
-		Source:             "source1",
-		DestinationAddress: "https://95b4c",
-		Topics:             []string{"quickstart-events"},
-		NotificationType:   "webhook"}
-
-	checkerror := produce1.Produce(context.Background(), &someevent)
-	fmt.Print(checkerror)
-	if checkerror != nil {
-		fmt.Println("Error producing message:", checkerror)
-		return
+		log.Fatal().Msg(fmt.Errorf("failed to automigrate database: %s", err).Error())
 	}
 
-	fmt.Println("Message produced successfully")
-	go service.Consuming()
+	cfg, err := database.GetEnv()
+	if err != nil {
+		log.Fatal().Msg(fmt.Errorf("error getting env: %s", err).Error())
+	}
+
+	go service.Consuming(cfg.BrokerAddress)
 
 	go clock.RetryClock()
 
+	// not exiting the server
 	var wg sync.WaitGroup
+
 	wg.Wait()
-	//
-	//fmt.Println("checking go routine")
-
-	//for {
-	//		time.Sleep(time.Minute)
-	//		time.Sleep(time.Minute)
-
-	//}
-
 }

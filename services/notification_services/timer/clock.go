@@ -37,6 +37,7 @@ func RetryClock() {
 		for _, event := range events {
 			consumerEvent := eventToConsumerEvent(*event)
 			if event.Attempts >= models.MaxRetryAttempts {
+
 				log.Info("Max attempts reached.")
 
 				event.Status = models.StatusIgnored
@@ -50,7 +51,7 @@ func RetryClock() {
 				continue
 			}
 
-			err, isRetryable := service.Deliver(eventToConsumerEvent(consumerEvent), event.NotificationType)
+			err, isRetryable := service.DeliverEvent(eventToConsumerEvent(consumerEvent), event.NotificationType)
 			if err != nil {
 				log.Error("Error delivering events", err)
 				if isRetryable {
