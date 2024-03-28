@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"sync"
 
-	database "github.com/pikapika/database"
-	clock "github.com/pikapika/notification_services/timer"
-	service "github.com/pikapika/notification_services/webhook"
+	database "github.com/database"
+	clock "github.com/notification_services/timer"
+	service "github.com/notification_services/webhook"
 	log "github.com/rs/zerolog/log"
 )
 

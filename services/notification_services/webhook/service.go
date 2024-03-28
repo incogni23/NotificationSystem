@@ -2,14 +2,15 @@ package service
 
 import (
 	"bytes"
-	"consumer"
 	"fmt"
 	"net/http"
 	"time"
 
+	"github.com/consumer"
+
+	"github.com/database"
 	"github.com/labstack/gommon/log"
-	"github.com/pikapika/database"
-	"github.com/pikapika/models"
+	"github.com/models"
 )
 
 func consumerAdapter(p *consumer.Event) *models.Event {

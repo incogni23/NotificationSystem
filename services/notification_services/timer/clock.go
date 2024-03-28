@@ -1,13 +1,14 @@
 package clock
 
 import (
-	"consumer"
 	"time"
 
+	"github.com/consumer"
+
+	database "github.com/database"
 	"github.com/labstack/gommon/log"
-	database "github.com/pikapika/database"
-	"github.com/pikapika/models"
-	service "github.com/pikapika/notification_services/webhook"
+	"github.com/models"
+	service "github.com/notification_services/webhook"
 )
 
 func eventToConsumerEvent(event models.Event) consumer.Event {

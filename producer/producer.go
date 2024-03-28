@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/google/uuid"
-	"github.com/pikapika/models"
+	"github.com/models"
 
 	"github.com/segmentio/kafka-go"
 )
@@ -15,9 +15,9 @@ type producer struct {
 	writer *kafka.Writer
 }
 
-func Newwriter() *producer {
+func Newwriter(addr string) *producer {
 	w := &kafka.Writer{
-		Addr: kafka.TCP("localhost:9092"), //kafka's address here
+		Addr: kafka.TCP(addr), //kafka's address here
 		//Topic:    Topic,
 		//Balancer: &kafka.LeastBytes{}, //use round robin which is by default
 	}
