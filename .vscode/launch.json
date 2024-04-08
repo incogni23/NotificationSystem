@@ -2,12 +2,11 @@
     "version": "0.2.0",
     "configurations": [
       {
-        "name": "Launch NotificationService",
+        "name": "Launch Notification Server",
         "type": "go",
         "request": "launch",
         "mode": "debug",
         "program": "main.go"
-        
       }
     ]
-  }
+}

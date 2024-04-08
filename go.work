@@ -1,8 +1,10 @@
 go 1.22.0
 
 use (
-	.
-	./producer
 	./consumer
-	./Services/notification_service
+	./database
+
+	./models
+	./producer
+	./services/notification_services
 )
