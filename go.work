@@ -7,4 +7,5 @@ use (
 	./models
 	./producer
 	./services/notification_services
+	./createJWT
 )
