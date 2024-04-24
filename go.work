@@ -1,11 +1,13 @@
 go 1.22.0
 
 use (
+	./auth
 	./consumer
+	./createJWT
 	./database
 
 	./models
 	./producer
 	./services/notification_services
-	./createJWT
+	./validateJWT
 )
