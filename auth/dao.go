@@ -22,10 +22,10 @@ type Dao interface {
 }
 
 type dao struct {
-	database gorm.DB
+	database *gorm.DB
 }
 
-func NewDatabase(db gorm.DB) Dao {
+func NewDatabase(db *gorm.DB) Dao {
 	return &dao{
 		database: db,
 	}
