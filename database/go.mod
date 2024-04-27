@@ -1,6 +1,6 @@
 module github.com/database
 
-go 1.22.0
+go 1.22.2
 
 require (
 	github.com/ilyakaznacheev/cleanenv v1.5.0

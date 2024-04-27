@@ -1,6 +1,6 @@
 module github.com/notification_services
 
-go 1.22.0
+go 1.22.2
 
 require (
 	github.com/consumer v0.0.0-00010101000000-000000000000
