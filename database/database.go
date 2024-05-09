@@ -1,7 +1,6 @@
 package database
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
@@ -13,10 +12,10 @@ import (
 )
 
 var db *gorm.DB
-var cfg *models.ConfigDatabase
+var cfg models.ConfigDatabase
 
 func SetupEnvAndDB() (*gorm.DB, error) {
-	err := cleanenv.ReadEnv(cfg)
+	err := cleanenv.ReadEnv(&cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -35,11 +34,9 @@ func SetupEnvAndDB() (*gorm.DB, error) {
 }
 
 func GetEnv() (*models.ConfigDatabase, error) {
-	if cfg != nil {
-		return cfg, nil
-	}
 
-	return nil, errors.New("error getting config")
+	return &cfg, nil
+
 }
 
 func CreateEvent(event *models.Event) error {

@@ -2,6 +2,7 @@ package validate
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/dgrijalva/jwt-go"
 )
@@ -19,8 +20,27 @@ func Validate(tokenString, secretKey string) error {
 	}
 
 	if !token.Valid {
-		return fmt.Errorf("Token is invalid")
+		return fmt.Errorf("token is invalid")
 
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return fmt.Errorf("failed to parse claims")
+	}
+
+	expirationTimeClaim, ok := claims["exp"]
+	if !ok {
+		return fmt.Errorf("exp Time not found in claims")
+	}
+
+	expirationTime, ok := expirationTimeClaim.(float64)
+	if !ok {
+		return fmt.Errorf("failed to parse exp time")
+	}
+
+	if time.Now().Unix() > int64(expirationTime) {
+		return fmt.Errorf("token has expired")
 	}
 	return nil
 }

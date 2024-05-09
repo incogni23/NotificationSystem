@@ -42,6 +42,11 @@ func (db *dao) InsertUser(u User) error {
 func (db *dao) GetUser(username string) (*User, error) {
 	var user User
 	getUser := db.database.First(&user, "username = ?", username)
+
+	// record not found - check
+	if getUser.Error != nil && getUser.Error.Error() == "record not found" {
+		return nil, nil
+	}
 	if getUser.Error != nil {
 		return nil, getUser.Error
 	}

@@ -6,6 +6,7 @@ import (
 
 	"github.com/create"
 	"github.com/validate"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
@@ -33,12 +34,21 @@ func NewDBVar(d Dao) AuthServicer {
 
 func (dbv *DBVar) SignUp(u User) error {
 	existingUser, err := dbv.db.GetUser(u.Username)
-	if existingUser.Username != "" {
-		return errors.New("User already exists")
+	if existingUser != nil {
+		if existingUser.Username != "" {
+			return errors.New("User already exists")
+		}
 	}
 	if err != nil {
 		return err
 	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	u.Password = string(hashedPassword)
 
 	err = dbv.db.InsertUser(u)
 	if err != nil {
@@ -53,8 +63,14 @@ func (dbv *DBVar) Login(username, password string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if user.Password != password {
-		return "", errors.New("wrong credentials")
+
+	if user == nil {
+		return "", errors.New("record doesnt exist")
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	if err != nil {
+		return "", err
 	}
 
 	tokenString, err := create.CreateToken(time.Minute*1, "secretkey")
@@ -71,11 +87,3 @@ func (dbv *DBVar) LoginWithToken(tokenString string) (string, error) {
 	}
 	return "valid token", nil
 }
-
-// signup:
-//u1 User:
-// u1-> db
-// succes -> if user is suceesfully created in db as well
-// db X - fail
-
-//Login
