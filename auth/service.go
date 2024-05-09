@@ -5,13 +5,15 @@ import (
 	"time"
 
 	"github.com/create"
+	"github.com/google/uuid"
 	"github.com/validate"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	UserID   uuid.UUID `json:"userID" gorm:"type:uuid;primaryKey"`
+	Username string    `json:"username"`
+	Password string    `json:"password"`
 }
 
 type AuthServicer interface {
