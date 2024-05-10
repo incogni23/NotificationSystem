@@ -34,8 +34,8 @@ func NewDBVar(d Dao) AuthServicer {
 
 // new signup
 
-func (dbv *DBVar) SignUp(u User) error {
-	existingUser, err := dbv.db.GetUser(u.Username)
+func (dbv *DBVar) SignUp(incomingUser User) error {
+	existingUser, err := dbv.db.GetUser(incomingUser.Username)
 	if existingUser != nil {
 		if existingUser.Username != "" {
 			return errors.New("User already exists")
@@ -45,14 +45,14 @@ func (dbv *DBVar) SignUp(u User) error {
 		return err
 	}
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(incomingUser.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
 
-	u.Password = string(hashedPassword)
+	incomingUser.Password = string(hashedPassword)
 
-	err = dbv.db.InsertUser(u)
+	err = dbv.db.InsertUser(incomingUser)
 	if err != nil {
 		return errors.New("User creation failed")
 
@@ -61,16 +61,16 @@ func (dbv *DBVar) SignUp(u User) error {
 
 }
 func (dbv *DBVar) Login(username, password string) (string, error) {
-	user, err := dbv.db.GetUser(username)
+	existingUser, err := dbv.db.GetUser(username)
 	if err != nil {
 		return "", err
 	}
 
-	if user == nil {
+	if existingUser == nil {
 		return "", errors.New("record doesnt exist")
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	err = bcrypt.CompareHashAndPassword([]byte(existingUser.Password), []byte(password))
 	if err != nil {
 		return "", err
 	}

@@ -20,9 +20,9 @@ func NewDatabase(db *gorm.DB) Dao {
 	}
 }
 
-func (db *dao) InsertUser(u User) error {
-	u.UserID = uuid.New()
-	newUser := db.database.Create(u)
+func (db *dao) InsertUser(incomingUser User) error {
+	incomingUser.UserID = uuid.New()
+	newUser := db.database.Create(incomingUser)
 	if newUser.Error != nil {
 		return newUser.Error
 	}

@@ -9,10 +9,6 @@ import (
 )
 
 func main() {
-	//dep, err := dependencies.Init()
-	//if err != nil {
-	//	panic(err)
-	//	}
 
 	r := gin.New()
 
