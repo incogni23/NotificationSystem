@@ -32,8 +32,7 @@ func (e *endpoint) Signup(c *gin.Context) {
 		return
 	}
 
-	// signup
-	c.JSON(http.StatusOK, gin.H{"response": "done"})
+	c.JSON(http.StatusOK, gin.H{"userId": user.UserID})
 }
 
 func (e *endpoint) Login(c *gin.Context) {
@@ -54,7 +53,6 @@ func (e *endpoint) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"token": token})
 
 }
-
 
 func (e *endpoint) LoginWithToken(c *gin.Context) {
 	tokenString := c.GetHeader("Authorization")
