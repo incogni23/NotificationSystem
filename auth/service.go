@@ -36,11 +36,10 @@ func NewDBVar(d Dao) AuthServicer {
 
 func (dbv *DBVar) SignUp(incomingUser User) error {
 	existingUser, err := dbv.db.GetUser(incomingUser.Username)
-	if existingUser != nil {
-		if existingUser.Username != "" {
-			return errors.New("User already exists")
-		}
+	if existingUser != nil && existingUser.Username != "" {
+		return errors.New("User already exists")
 	}
+
 	if err != nil {
 		return err
 	}
