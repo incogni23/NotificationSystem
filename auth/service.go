@@ -32,8 +32,6 @@ func NewDBVar(d Dao) AuthServicer {
 	}
 }
 
-// new signup
-
 func (dbv *DBVar) SignUp(incomingUser User) error {
 	existingUser, err := dbv.db.GetUser(incomingUser.Username)
 	if existingUser != nil && existingUser.Username != "" {
@@ -56,6 +54,7 @@ func (dbv *DBVar) SignUp(incomingUser User) error {
 		return errors.New("User creation failed")
 
 	}
+
 	return nil
 
 }
@@ -78,6 +77,7 @@ func (dbv *DBVar) Login(username, password string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	return tokenString, nil
 }
 
@@ -86,5 +86,6 @@ func (dbv *DBVar) LoginWithToken(tokenString string) (string, error) {
 	if err != nil {
 		return "", errors.New("invalid token")
 	}
+
 	return "valid token", nil
 }

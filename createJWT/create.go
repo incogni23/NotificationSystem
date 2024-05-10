@@ -19,6 +19,7 @@ func CreateToken(expireIn time.Duration, secretKey string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	
 	return tokenString, nil
 
 }

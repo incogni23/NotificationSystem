@@ -56,6 +56,7 @@ func (e *endpoint) Login(c *gin.Context) {
 
 func (e *endpoint) LoginWithToken(c *gin.Context) {
 	tokenString := c.GetHeader("Authorization")
+	
 	if tokenString == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"response": "token not provided"})
 		return

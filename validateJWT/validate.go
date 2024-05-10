@@ -15,13 +15,13 @@ func Validate(tokenString, secretKey string) error {
 			}
 			return []byte(secretKey), nil
 		})
+
 	if err != nil {
 		return err
 	}
 
 	if !token.Valid {
 		return fmt.Errorf("token is invalid")
-
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
@@ -42,5 +42,6 @@ func Validate(tokenString, secretKey string) error {
 	if time.Now().Unix() > int64(expirationTime) {
 		return fmt.Errorf("token has expired")
 	}
+
 	return nil
 }

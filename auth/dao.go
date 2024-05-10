@@ -23,9 +23,11 @@ func NewDatabase(db *gorm.DB) Dao {
 func (db *dao) InsertUser(incomingUser User) error {
 	incomingUser.UserID = uuid.New()
 	newUser := db.database.Create(incomingUser)
+	
 	if newUser.Error != nil {
 		return newUser.Error
 	}
+
 	return nil
 }
 
@@ -36,9 +38,10 @@ func (db *dao) GetUser(username string) (*User, error) {
 	if getUser.Error != nil && getUser.Error.Error() == "record not found" {
 		return nil, nil
 	}
+
 	if getUser.Error != nil {
 		return nil, getUser.Error
 	}
-	return &user, nil
 
+	return &user, nil
 }
