@@ -39,7 +39,7 @@ func (e *endpoint) Signup(c *gin.Context) {
 func (e *endpoint) Login(c *gin.Context) {
 	var user User
 
-	err := c.ShouldBind(&user)
+	err := c.ShouldBindJSON(&user)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"response": err.Error()})
 		return
