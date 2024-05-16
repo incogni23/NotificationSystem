@@ -5,12 +5,15 @@ import (
 	"time"
 
 	"github.com/create"
+	"github.com/google/uuid"
 	"github.com/validate"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	UserID   uuid.UUID `json:"userID" gorm:"type:uuid;primaryKey"`
+	Username string    `json:"username"`
+	Password string    `json:"password"`
 }
 
 type AuthServicer interface {
@@ -29,38 +32,52 @@ func NewDBVar(d Dao) AuthServicer {
 	}
 }
 
-// new signup
-
-func (dbv *DBVar) SignUp(u User) error {
-	existingUser, err := dbv.db.GetUser(u.Username)
-	if existingUser.Username != "" {
+func (dbv *DBVar) SignUp(incomingUser User) error {
+	existingUser, err := dbv.db.GetUser(incomingUser.Username)
+	if existingUser != nil && existingUser.Username != "" {
 		return errors.New("User already exists")
 	}
+
 	if err != nil {
 		return err
 	}
 
-	err = dbv.db.InsertUser(u)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(incomingUser.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	incomingUser.Password = string(hashedPassword)
+
+	err = dbv.db.InsertUser(incomingUser)
 	if err != nil {
 		return errors.New("User creation failed")
 
 	}
+
 	return nil
 
 }
 func (dbv *DBVar) Login(username, password string) (string, error) {
-	user, err := dbv.db.GetUser(username)
+	existingUser, err := dbv.db.GetUser(username)
 	if err != nil {
 		return "", err
 	}
-	if user.Password != password {
-		return "", errors.New("wrong credentials")
+
+	if existingUser == nil {
+		return "", errors.New("record doesnt exist")
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(existingUser.Password), []byte(password))
+	if err != nil {
+		return "", err
 	}
 
 	tokenString, err := create.CreateToken(time.Minute*1, "secretkey")
 	if err != nil {
 		return "", err
 	}
+
 	return tokenString, nil
 }
 
@@ -69,13 +86,6 @@ func (dbv *DBVar) LoginWithToken(tokenString string) (string, error) {
 	if err != nil {
 		return "", errors.New("invalid token")
 	}
+
 	return "valid token", nil
 }
-
-// signup:
-//u1 User:
-// u1-> db
-// succes -> if user is suceesfully created in db as well
-// db X - fail
-
-//Login

@@ -79,9 +79,10 @@ func TestLogin(t *testing.T) {
 		dbmock.On("GetUser", "Ankita").Return(&mockUser, nil)
 
 		authService := auth.NewDBVar(dbmock)
-		err := authService.SignUp(mockUser)
+		token, err := authService.Login("Ankita", "wrongpassword")
 
-		assert.EqualError(t, err, "User already exists")
+		assert.Error(t, err)
+		assert.Equal(t, "", token)
 
 	})
 
