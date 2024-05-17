@@ -12,6 +12,7 @@ import (
 
 type User struct {
 	UserID     uuid.UUID `json:"userID" gorm:"type:uuid;primaryKey"`
+	Email      string    `json:"email"`
 	Username   string    `json:"username"`
 	Password   string    `json:"-"`
 	DbHost     string    `json:"-"`
@@ -76,7 +77,7 @@ func (dbv *DBVar) Login(username, password string) (string, error) {
 		return "", err
 	}
 
-	tokenString, err := create.CreateToken(time.Minute*1, "secretkey")
+	tokenString, err := create.CreateToken(time.Minute*1, "secretkey", existingUser.Email, existingUser.UserID)
 	if err != nil {
 		return "", err
 	}
