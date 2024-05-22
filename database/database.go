@@ -7,6 +7,8 @@ import (
 	"github.com/auth"
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/models"
+	"github.com/monolith/order"
+	"github.com/monolith/payments"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -76,6 +78,19 @@ func GetEventsForRetry() ([]*models.Event, error) {
 
 func Migrate(db *gorm.DB) error {
 	err := db.AutoMigrate(&models.Event{})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func AutoMigrateOrder(db *gorm.DB) error {
+	err := db.AutoMigrate(&payments.Payment{},
+		&payments.PaymentMethod{},
+		&payments.PaymentGateway{},
+		&payments.PaymentConfiguration{},
+		&payments.ThirdPartyToken{},
+		&order.Order{})
 	if err != nil {
 		return err
 	}
