@@ -5,32 +5,42 @@ import (
 	"github.com/database"
 	"github.com/gin-gonic/gin"
 
+	"github.com/monolith/order"
+	"github.com/monolith/payments"
 	"github.com/monolith/routes"
 )
 
 func main() {
 
-	r := gin.New()
+    r := gin.New()
 
-	db, err := database.SetupEnvAndDB()
-	if err != nil {
-		panic(err)
-	}
+    db, err := database.SetupEnvAndDB()
+    if err != nil {
+        panic(err)
+    }
 
-	db.AutoMigrate(&auth.User{})
+    db.AutoMigrate(&auth.User{})
+    
+    db.AutoMigrate(&payments.Payment{},
+		&payments.PaymentMethod{},
+		&payments.PaymentGateway{},
+		&payments.PaymentConfiguration{},
+		&payments.ThirdPartyToken{},
+		&order.Order{})
 
-	authDao := auth.NewDatabase(db)
+    authDao := auth.NewDatabase(db)
 
-	authService := auth.NewDBVar(authDao)
+    authService := auth.NewDBVar(authDao)
 
-	unprotectedGroup := routes.UnprotectedGroup(r)
+    unprotectedGroup := routes.UnprotectedGroup(r)
 
-	authEndpoint := auth.NewEndpoint(authService)
+    authEndpoint := auth.NewEndpoint(authService)
 
-	unprotectedGroup.AuthGroup.POST("/signup", authEndpoint.Signup)
+    unprotectedGroup.AuthGroup.POST("/signup", authEndpoint.Signup)
 
-	unprotectedGroup.AuthGroup.POST("/login", authEndpoint.Login)
+    unprotectedGroup.AuthGroup.POST("/login", authEndpoint.Login)
 
-	r.Run(":9111")
+    r.Run(":9111")
 
 }
+
