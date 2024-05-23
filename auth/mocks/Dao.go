@@ -43,7 +43,7 @@ func (_m *Dao) GetUser(Username string) (*auth.User, error) {
 }
 
 // InsertUser provides a mock function with given fields: _a0
-func (_m *Dao) InsertUser(_a0 auth.User) error {
+func (_m *Dao) InsertUser(_a0 *auth.User) error {
 	ret := _m.Called(_a0)
 
 	if len(ret) == 0 {
@@ -51,7 +51,7 @@ func (_m *Dao) InsertUser(_a0 auth.User) error {
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(auth.User) error); ok {
+	if rf, ok := ret.Get(0).(func(*auth.User) error); ok {
 		r0 = rf(_a0)
 	} else {
 		r0 = ret.Error(0)

@@ -1,6 +1,9 @@
 package payments
 
-import "github.com/google/uuid"
+import (
+	"github.com/auth"
+	"github.com/google/uuid"
+)
 
 type PaymentMethod struct {
 	MethodID   string `json:"method_id" gorm:"primaryKey"`
@@ -15,13 +18,16 @@ type PaymentGateway struct {
 type ThirdPartyToken struct {
 	TokenID  string    `json:"token_id" gorm:"primaryKey"`
 	UserID   uuid.UUID `json:"user_id" gorm:"type:uuid;not null;constraint:OnDelete:CASCADE;foreignKey:UserID;references:UserID"`
-	Token    string    `json:"token"`
-	Provider string    `json:"provider"`
+	User     auth.User
+	Token    string `json:"token"`
+	Provider string `json:"provider"`
 }
 
 type PaymentConfiguration struct {
-	ConfigID   string    `json:"config_id" gorm:"primaryKey"`
-	UserID     uuid.UUID `json:"user_id" gorm:"type:uuid;not null;constraint:OnDelete:CASCADE;foreignKey:UserID;references:UserID"`
-	MethodID   string    `json:"method_id"`
-	MethodType string    `json:"method_type"`
+	ConfigID      string    `json:"config_id" gorm:"primaryKey"`
+	UserID        uuid.UUID `json:"user_id" gorm:"type:uuid;not null;constraint:OnDelete:CASCADE;foreignKey:UserID;references:UserID"`
+	User          auth.User
+	MethodID      string `json:"method_id"`
+	MethodType    string `json:"method_type"`
+	PaymentMethod PaymentMethod
 }

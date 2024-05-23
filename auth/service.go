@@ -21,7 +21,7 @@ type User struct {
 }
 
 type AuthServicer interface {
-	SignUp(u User) error
+	SignUp(u *User) (*User, error)
 	Login(username, password string) (string, error)
 	LoginWithToken(tokenString string) (string, error)
 }
@@ -36,32 +36,35 @@ func NewDBVar(d Dao) AuthServicer {
 	}
 }
 
-func (dbv *DBVar) SignUp(incomingUser User) error {
+func (dbv *DBVar) SignUp(incomingUser *User) (*User, error) {
+	if incomingUser.Username == "" || incomingUser.Password == "" || incomingUser.Email == "" {
+		return nil, errors.New("username, password, and email are required")
+	}
+
 	existingUser, err := dbv.db.GetUser(incomingUser.Username)
 	if existingUser != nil && existingUser.Username != "" {
-		return errors.New("User already exists")
+		return nil, errors.New("User already exists")
 	}
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(incomingUser.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	incomingUser.Password = string(hashedPassword)
 
 	err = dbv.db.InsertUser(incomingUser)
 	if err != nil {
-		return errors.New("User creation failed")
-
+		return nil, errors.New("User creation failed")
 	}
 
-	return nil
-
+	return incomingUser, nil
 }
+
 func (dbv *DBVar) Login(username, password string) (string, error) {
 	existingUser, err := dbv.db.GetUser(username)
 	if err != nil {

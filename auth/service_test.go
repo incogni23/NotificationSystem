@@ -8,53 +8,50 @@ import (
 	"github.com/auth"
 	mocks "github.com/auth/mocks"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/crypto/bcrypt"
 )
 
 func TestSignup(t *testing.T) {
-
 	dbmock := mocks.NewDao(t)
 	mockUser := auth.User{
 		Username: "Ankita",
 		Password: "Ankita@2307",
 	}
-	t.Run("Test Signup Sucess", func(t *testing.T) {
+	t.Run("Test Signup Success", func(t *testing.T) {
+		blankUser := auth.User{}
 
-		blankuser := auth.User{}
-
-		dbmock.On("InsertUser", mockUser).Return(nil)
-		dbmock.On("GetUser", "Ankita").Return((&blankuser), nil)
+		dbmock.On("InsertUser", &mockUser).Return(nil)
+		dbmock.On("GetUser", "Ankita").Return(&blankUser, nil)
 
 		sp := auth.NewDBVar(dbmock)
-		signupsuceess := sp.SignUp(mockUser)
+		user, signUpSuccess := sp.SignUp(&mockUser)
 
-		assert.NoError(t, signupsuceess)
-
+		assert.NoError(t, signUpSuccess)
+		assert.NotEqual(t, uuid.Nil, user.UserID)
 	})
 
 	t.Run("Test Signup Failure - db failed", func(t *testing.T) {
-		blankuser := auth.User{}
-		dbmock.On("GetUser", "Ankita").Return((&blankuser), errors.New("some error"))
+		blankUser := auth.User{}
+		dbmock.On("GetUser", "Ankita").Return(&blankUser, errors.New("some error"))
 
 		sp := auth.NewDBVar(dbmock)
-		signupfailed := sp.SignUp(mockUser)
+		_, signUpFailed := sp.SignUp(&mockUser)
 
-		assert.EqualError(t, signupfailed, "some error")
-
+		assert.EqualError(t, signUpFailed, "some error")
 	})
 
 	t.Run("Test Signup Failure - Duplicate Records", func(t *testing.T) {
-		//	dbmock.On("InsertUser", mockUser).Return(errors.New("User creation failed"))
-		dbmock.On("GetUser", "Ankita").Return((&mockUser), nil)
+		dbmock.On("GetUser", "Ankita").Return(&mockUser, nil)
 
 		sp := auth.NewDBVar(dbmock)
-		signupfailed := sp.SignUp(mockUser)
+		_, signUpFailed := sp.SignUp(&mockUser)
 
-		assert.EqualError(t, signupfailed, "User already exists")
-
+		assert.EqualError(t, signUpFailed, "User already exists")
 	})
 }
+
 func TestLogin(t *testing.T) {
 	dbmock := mocks.NewDao(t)
 	password := "Ankita@2307"
@@ -113,6 +110,7 @@ func TestLogin(t *testing.T) {
 
 		assert.EqualError(t, err, "invalid token")
 	})
+
 	t.Run("Test Login Failed- Token expired", func(t *testing.T) {
 		expiredToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 			"username": "Ankita",

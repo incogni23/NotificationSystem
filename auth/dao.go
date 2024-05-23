@@ -7,7 +7,7 @@ import (
 
 type Dao interface {
 	GetUser(Username string) (*User, error)
-	InsertUser(User) error
+	InsertUser(*User) error
 }
 
 type dao struct {
@@ -19,18 +19,16 @@ func NewDatabase(db *gorm.DB) Dao {
 		database: db,
 	}
 }
+func (db *dao) InsertUser(incomingUser *User) error {
+    incomingUser.UserID = uuid.New()
+    newUser := db.database.Create(incomingUser)
+  
+    if newUser.Error != nil {
+        return newUser.Error
+    }
 
-func (db *dao) InsertUser(incomingUser User) error {
-	incomingUser.UserID = uuid.New()
-	newUser := db.database.Create(incomingUser)
-	
-	if newUser.Error != nil {
-		return newUser.Error
-	}
-
-	return nil
+    return nil
 }
-
 func (db *dao) GetUser(username string) (*User, error) {
 	var user User
 	getUser := db.database.First(&user, "username = ?", username)
