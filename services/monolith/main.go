@@ -20,7 +20,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	
+
 	db.AutoMigrate(&auth.User{},
 		&payments.PaymentMethod{},
 		&payments.PaymentGateway{},
@@ -34,7 +34,7 @@ func main() {
 
 	authDao := auth.NewDatabase(db)
 
-	authService := auth.NewDBVar(authDao)
+	authService := auth.NewService(authDao)
 
 	unprotectedGroup := routes.UnprotectedGroup(r)
 
