@@ -5,6 +5,8 @@ import (
 	"github.com/database"
 	"github.com/gin-gonic/gin"
 
+	"github.com/monolith/configurations"
+	"github.com/monolith/dependencies"
 	"github.com/monolith/order"
 	"github.com/monolith/payments"
 	"github.com/monolith/routes"
@@ -12,35 +14,42 @@ import (
 
 func main() {
 
-    r := gin.New()
+	r := gin.New()
 
-    db, err := database.SetupEnvAndDB()
-    if err != nil {
-        panic(err)
-    }
-
-    db.AutoMigrate(&auth.User{})
-    
-    db.AutoMigrate(&payments.Payment{},
+	db, err := database.SetupEnvAndDB()
+	if err != nil {
+		panic(err)
+	}
+	
+	db.AutoMigrate(&auth.User{},
 		&payments.PaymentMethod{},
 		&payments.PaymentGateway{},
-		&payments.PaymentConfiguration{},
+		&order.Order{},
+		&payments.Payment{},
 		&payments.ThirdPartyToken{},
-		&order.Order{})
+		&payments.PaymentConfiguration{},
+	)
 
-    authDao := auth.NewDatabase(db)
+	dependencies.SeedPayment(db)
 
-    authService := auth.NewDBVar(authDao)
+	authDao := auth.NewDatabase(db)
 
-    unprotectedGroup := routes.UnprotectedGroup(r)
+	authService := auth.NewDBVar(authDao)
 
-    authEndpoint := auth.NewEndpoint(authService)
+	unprotectedGroup := routes.UnprotectedGroup(r)
 
-    unprotectedGroup.AuthGroup.POST("/signup", authEndpoint.Signup)
+	authEndpoint := auth.NewEndpoint(authService)
 
-    unprotectedGroup.AuthGroup.POST("/login", authEndpoint.Login)
+	unprotectedGroup.AuthGroup.POST("/signup", authEndpoint.Signup)
 
-    r.Run(":9111")
+	unprotectedGroup.AuthGroup.POST("/login", authEndpoint.Login)
+
+	configService := configurations.NewDBConfig(db)
+
+	r.GET("/payment_method/:method_id", configService.PaymentMethod)
+	r.GET("/payment_gateway/:gateway_id", configService.PaymentGateway)
+	r.POST("/payment_config", configService.PaymentConfiguration)
+
+	r.Run(":9111")
 
 }
-
