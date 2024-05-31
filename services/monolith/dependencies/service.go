@@ -8,7 +8,6 @@ import (
 
 type Dependencies struct {
 	db *gorm.DB
-
 	AuthService auth.AuthServicer
 }
 

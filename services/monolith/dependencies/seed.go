@@ -7,24 +7,23 @@ import (
 	"gorm.io/gorm"
 )
 
-func Initconfig(db *gorm.DB, config payments.PaymentConfiguration) error {
+//func Initconfig(db *gorm.DB, config payments.PaymentConfiguration) error {
+//res := db.Where("user_id = ?", config.UserID).FirstOrCreate(&config)
+//
+//if res.Error != nil {
+//	log.Printf("error creating payment configuration")
+//	return res.Error
+//}
+//if res.RowsAffected == 0 {
+//	log.Printf("Payment configuration already exists")
+//} else {
+//	log.Printf("Payment configuration successful")
+//}
+//
+//return nil
+//}
 
-	res := db.Where("user_id = ?", config.UserID).FirstOrCreate(&config)
-
-	if res.Error != nil {
-		log.Printf("error creating payment configuration")
-		return res.Error
-	}
-	if res.RowsAffected == 0 {
-		log.Printf("Payment configuration already exists")
-	} else {
-		log.Printf("Payment configuration successful")
-	}
-
-	return nil
-}
-
-func SeedPayment(db *gorm.DB) {
+func SeedPaymentProperties(db *gorm.DB) {
 
 	paymentMethod := payments.PaymentMethod{
 		MethodID:   "1",
@@ -38,8 +37,8 @@ func SeedPayment(db *gorm.DB) {
 	}
 
 	paymentGateway := payments.PaymentGateway{
-		GatewayID:   "1",
-		GatewayName: "RAZORPAY",
+		GatewayID:   "2",
+		GatewayName: "JUSPAY",
 	}
 
 	if err := db.FirstOrCreate(&paymentGateway, payments.PaymentGateway{GatewayID: paymentGateway.GatewayID}).Error; err != nil {
