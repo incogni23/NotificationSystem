@@ -1,0 +1,9 @@
+1) Validate function, we have to add expiry time validation logic
+TODO: create a repo here, and pass the auth dependency here to call Signup function
+
+
+
+
+"ba29b859-7ca1-48bf-b937-b67d9b2ab100"
+
+ "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFiY0BhYmMuY29tIiwiZXhwIjoxNzE2NzU5MTc0LCJ1c2VyX2lkIjoiYmEyOWI4NTktN2NhMS00OGJmLWI5MzctYjY3ZDliMmFiMTAwIn0.ycw1OIlBvrLc1Xfy0zfJ84GaLl-WYN7FPzx_ToyvEOU"

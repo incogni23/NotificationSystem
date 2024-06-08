@@ -13,7 +13,7 @@ import (
 func main() {
 	db, err := database.SetupEnvAndDB()
 	if err != nil {
-		log.Fatal().Msg(fmt.Errorf("Failed to connect to database: %s", err).Error())
+		log.Fatal().Msg(fmt.Errorf("failed to connect to database: %s", err).Error())
 	}
 
 	err = database.Migrate(db)
