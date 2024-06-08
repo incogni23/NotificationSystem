@@ -8,7 +8,6 @@ import (
 
 type Dependencies struct {
 	db *gorm.DB
-
 	AuthService auth.AuthServicer
 }
 
@@ -20,7 +19,7 @@ func Init() (*Dependencies, error) {
 
 	authDao := auth.NewDatabase(db)
 
-	authService := auth.NewDBVar(authDao)
+	authService := auth.NewService(authDao)
 
 	return &Dependencies{
 		db:          db,

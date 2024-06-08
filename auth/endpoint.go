@@ -7,9 +7,7 @@ import (
 )
 
 type endpoint struct {
-
 	authservices AuthServicer
-	
 }
 
 func NewEndpoint(authService AuthServicer) *endpoint {
@@ -20,24 +18,21 @@ func NewEndpoint(authService AuthServicer) *endpoint {
 }
 
 func (e *endpoint) Signup(c *gin.Context) {
-
 	var user User
 
 	err := c.ShouldBindJSON(&user)
-
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"response": err.Error()})
 		return
 	}
 
-	err = e.authservices.SignUp(user)
-
+	createdUser, err := e.authservices.SignUp(&user)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"response": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"userId": user.UserID})
+	c.JSON(http.StatusOK, gin.H{"userId": createdUser.UserID})
 }
 
 func (e *endpoint) Login(c *gin.Context) {
@@ -63,7 +58,7 @@ func (e *endpoint) Login(c *gin.Context) {
 func (e *endpoint) LoginWithToken(c *gin.Context) {
 
 	tokenString := c.GetHeader("Authorization")
-	
+
 	if tokenString == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"response": "token not provided"})
 		return
