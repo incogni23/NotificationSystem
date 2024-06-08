@@ -7,10 +7,12 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	
 )
 
 type ProtectedGroups struct {
 	PaymentGroup *gin.RouterGroup
+	OrderGroup *gin.RouterGroup
 }
 
 type UnProtectedGroups struct {
@@ -19,11 +21,14 @@ type UnProtectedGroups struct {
 
 func ProtectedGroup(r *gin.Engine) ProtectedGroups {
 	paymentGroup := r.Group("/payments")
-
 	paymentGroup.Use(Validate())
+
+	orderGroup := r.Group("/orders")
+	orderGroup.Use(Validate())
 
 	return ProtectedGroups{
 		PaymentGroup: paymentGroup,
+		OrderGroup: orderGroup,
 	}
 }
 

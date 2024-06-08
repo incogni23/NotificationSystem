@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/auth"
@@ -37,6 +38,8 @@ func SetupEnvAndDB() (*gorm.DB, error) {
 func GetDB(user auth.User) (*gorm.DB, error) {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable TimeZone=Asia/Kolkata",
 		user.DbHost, user.DbUser, user.DbPassword, user.UserID, 5432)
+	log.Printf("Connecting to DB with host=%s, user=%s, password=%s, dbname=%s",
+		user.DbHost, user.DbUser, user.DbPassword, user.UserID)
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),

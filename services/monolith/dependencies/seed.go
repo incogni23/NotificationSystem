@@ -37,8 +37,8 @@ func SeedPaymentProperties(db *gorm.DB) {
 	}
 
 	paymentGateway := payments.PaymentGateway{
-		GatewayID:   "2",
-		GatewayName: "JUSPAY",
+		GatewayID:   "1",
+		GatewayName: "RAZORPAY",
 	}
 
 	if err := db.FirstOrCreate(&paymentGateway, payments.PaymentGateway{GatewayID: paymentGateway.GatewayID}).Error; err != nil {

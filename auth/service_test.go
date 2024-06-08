@@ -25,7 +25,7 @@ func TestSignup(t *testing.T) {
 		dbmock.On("InsertUser", &mockUser).Return(nil)
 		dbmock.On("GetUser", "Ankita").Return(&blankUser, nil)
 
-		sp := auth.NewDBVar(dbmock)
+		sp := auth.NewService(dbmock)
 		user, signUpSuccess := sp.SignUp(&mockUser)
 
 		assert.NoError(t, signUpSuccess)
@@ -36,7 +36,7 @@ func TestSignup(t *testing.T) {
 		blankUser := auth.User{}
 		dbmock.On("GetUser", "Ankita").Return(&blankUser, errors.New("some error"))
 
-		sp := auth.NewDBVar(dbmock)
+		sp := auth.NewService(dbmock)
 		_, signUpFailed := sp.SignUp(&mockUser)
 
 		assert.EqualError(t, signUpFailed, "some error")
@@ -45,7 +45,7 @@ func TestSignup(t *testing.T) {
 	t.Run("Test Signup Failure - Duplicate Records", func(t *testing.T) {
 		dbmock.On("GetUser", "Ankita").Return(&mockUser, nil)
 
-		sp := auth.NewDBVar(dbmock)
+		sp := auth.NewService(dbmock)
 		_, signUpFailed := sp.SignUp(&mockUser)
 
 		assert.EqualError(t, signUpFailed, "User already exists")
@@ -65,7 +65,7 @@ func TestLogin(t *testing.T) {
 	t.Run("Test Login Success", func(t *testing.T) {
 		dbmock.On("GetUser", "Ankita").Return(&mockUser, nil)
 
-		authService := auth.NewDBVar(dbmock)
+		authService := auth.NewService(dbmock)
 		token, err := authService.Login("Ankita", password)
 
 		assert.NoError(t, err)
@@ -75,7 +75,7 @@ func TestLogin(t *testing.T) {
 	t.Run("Test Login Failed- Wrong credentials", func(t *testing.T) {
 		dbmock.On("GetUser", "Ankita").Return(&mockUser, nil)
 
-		authService := auth.NewDBVar(dbmock)
+		authService := auth.NewService(dbmock)
 		token, err := authService.Login("Ankita", "wrongpassword")
 
 		assert.Error(t, err)
@@ -85,7 +85,7 @@ func TestLogin(t *testing.T) {
 	t.Run("Test Login Failed- User not found", func(t *testing.T) {
 		dbmock.On("GetUser", "Ankita").Return(nil, nil)
 
-		authService := auth.NewDBVar(dbmock)
+		authService := auth.NewService(dbmock)
 		token, err := authService.Login("Ankita", password)
 
 		assert.EqualError(t, err, "record doesnt exist")
@@ -95,7 +95,7 @@ func TestLogin(t *testing.T) {
 	t.Run("Test Login Failed- Db failed", func(t *testing.T) {
 		dbmock.On("GetUser", "Ankita").Return(nil, errors.New("database error"))
 
-		authService := auth.NewDBVar(dbmock)
+		authService := auth.NewService(dbmock)
 		token, err := authService.Login("Ankita", password)
 
 		assert.EqualError(t, err, "database error")
@@ -105,7 +105,7 @@ func TestLogin(t *testing.T) {
 	t.Run("Test Login Failed- Token Invalid", func(t *testing.T) {
 		invalidToken := "invalidtoken"
 
-		authService := auth.NewDBVar(dbmock)
+		authService := auth.NewService(dbmock)
 		_, err := authService.LoginWithToken(invalidToken)
 
 		assert.EqualError(t, err, "invalid token")
@@ -116,9 +116,9 @@ func TestLogin(t *testing.T) {
 			"username": "Ankita",
 			"exp":      time.Now().Add(-time.Minute).Unix(),
 		})
-		tokenString, _ := expiredToken.SignedString([]byte("secretkey"))
+		tokenString, _ := expiredToken.SignedString([]byte("secretKey"))
 
-		authService := auth.NewDBVar(dbmock)
+		authService := auth.NewService(dbmock)
 		_, err := authService.LoginWithToken(tokenString)
 
 		assert.EqualError(t, err, "invalid token")

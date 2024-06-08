@@ -7,6 +7,7 @@ import (
 
 	"github.com/monolith/configurations"
 	"github.com/monolith/dependencies"
+	"github.com/monolith/order"
 	"github.com/monolith/routes"
 )
 
@@ -27,6 +28,10 @@ func main() {
 
 	configService := configurations.NewDBConfig(authService)
 
+	orderDao := order.NewOrderDao()
+	orderService:= order.NewOrderService(orderDao)
+	orderEndpoint := order.NewOrderEndpoint(authService,orderService)
+	
 	unprotectedGroup := routes.UnprotectedGroup(r)
 	authEndpoint := auth.NewEndpoint(authService)
 
@@ -52,7 +57,8 @@ func main() {
 	}
 
 	protectedGroup := routes.ProtectedGroup(r)
-	//protectedGroup.PaymentGroup.Use(routes.Validate())
+	protectedGroup.OrderGroup.POST("/order", orderEndpoint.CreateOrder)
+	protectedGroup.OrderGroup.GET("/order/:order_id", orderEndpoint.GetOrderByID)
 
 	protectedGroup.PaymentGroup.GET("/payment_method/:method_id", configService.GetPaymentMethod)
 	protectedGroup.PaymentGroup.GET("/payment_gateway/:gateway_id", configService.GetPaymentGateway)
